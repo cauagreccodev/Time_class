@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Time implements Comparable<Time>
 {
     private byte hour;
@@ -23,12 +25,12 @@ public class Time implements Comparable<Time>
     }
     private void validate_minute(byte minute){
         if(minute < 0 || minute > 59){
-            throw new IllegalArgumentException("Invalid Minute input")
+            throw new IllegalArgumentException("Invalid Minute input");
         }
     }
     private void validate_second(byte second){
         if(second < 0 || second > 59){
-            throw new IllegalArgumentException("Invalid Second Input")
+            throw new IllegalArgumentException("Invalid Second Input");
         }
     }
     public Time(byte hour, byte minute, byte second) throws Exception
@@ -39,6 +41,15 @@ public class Time implements Comparable<Time>
         this.hour = hour;
         this.minute = minute;
         this.second = second;
+    }
+    public Time(Time other) throws Exception
+    {
+        if(other == null){
+            throw new IllegalArgumentException("Time model cannot be null");
+        }
+        this.hour = other.hour;
+        this.minute = other.minute;
+        this.second = other.second;
     }
 
 
@@ -92,7 +103,7 @@ public class Time implements Comparable<Time>
      */
     public byte getHour()
     {
-        return hour;
+        return hour; //converts all the minutes in hours
     }
 
 
@@ -101,7 +112,7 @@ public class Time implements Comparable<Time>
      */
     public byte getMinute()
     {
-        return minute;
+        return minute;  // converts all the seconds in minutes
     }
 
 
@@ -110,8 +121,9 @@ public class Time implements Comparable<Time>
      */
     public byte getSecond()
     {
-        return second;
+        return second; // get the remainder of the minutes calculated after extract the minutes
     }
+
 
 
     /*
@@ -133,7 +145,15 @@ public class Time implements Comparable<Time>
      */
     public void advance(int seconds) throws Exception
     {
-        // TO IMPLEMENT
+        if(seconds < 0){
+            throw new IllegalArgumentException("Invalid advance() input");
+        }
+        int total = (this.hour * 3600) + (this.minute * 60) + this.second;
+        total = (total + seconds) % 86400;
+
+        this.hour = (byte) (total / 3600);
+        this.minute = (byte) ((total % 3600) / 60);
+        this.second = (byte) (total % 60);
     }
 
 
@@ -157,7 +177,15 @@ public class Time implements Comparable<Time>
      */
     public void goBack(int seconds) throws Exception
     {
-        // TO IMPLEMENT
+        if(seconds < 0){
+            throw new IllegalArgumentException("Invalid goBack() input");
+        }
+        int total = (this.hour * 3600) + (this.minute * 60) + this.second;
+        total = (total - (seconds % 86400) + 86400) % 86400;
+
+        this.hour = (byte) (total / 3600);
+        this.minute = (byte) ((total % 3600) / 60);
+        this.second = (byte) (total % 60);
     }
 
 
@@ -182,7 +210,12 @@ public class Time implements Comparable<Time>
      */
     public Time getFutureTime(int seconds) throws Exception
     {
-        // TO IMPLEMENT
+        if(seconds < 0){
+            throw new IllegalArgumentException("Invalid getFutureTime() input");
+        }
+        Time t2 = new Time(this); 
+        t2.advance(seconds);
+        return t2;
     }
 
 
@@ -199,7 +232,12 @@ public class Time implements Comparable<Time>
      */
     public Time getPastTime(int seconds) throws Exception
     {
-        // TO IMPLEMENT
+        if(seconds < 0){
+            throw new IllegalArgumentException("Invalid getPastTime() input");
+        }
+        Time t2 = new Time(this);
+        t2.goBack(seconds);
+        return t2;
     }
 
 
@@ -221,7 +259,7 @@ public class Time implements Comparable<Time>
     @Override
     public String toString()
     {
-        // TO IMPLEMENT
+        return String.format("Time: %02d:%02d:%02d", + getHour(), getMinute(), getSecond());
     }
 
 
@@ -242,7 +280,12 @@ public class Time implements Comparable<Time>
     @Override
     public boolean equals(Object obj)
     {
-        // TO IMPLEMENT
+        if(obj == this){
+            return true;
+        }
+        if(obj == null || getClass() != obj.getClass()) return false;
+        Time other = (Time) obj;
+        return this.hour == other.hour && this.minute == other.minute && this.second == other.second;
     }
 
 
@@ -262,31 +305,7 @@ public class Time implements Comparable<Time>
     @Override
     public int hashCode()
     {
-        // TO IMPLEMENT
-    }
-
-
-    /*
-    * COPY CONSTRUCTOR.
-     *
-    * Must create a new Time using another Time object as its model.
-     *
-    * Example:
-     *
-    * Time t1 = new Time((byte)10, (byte)30, (byte)20);
-    * Time t2 = new Time(t1);
-     *
-    * t1 and t2 must have the same values, but must be different objects
-    * in memory.
-     *
-    * If the received model is null, throw an exception.
-     *
-    * Also consider whether this class's fields require a deep copy
-    * or whether a direct copy of the values is sufficient.
-     */
-    public Time(Time model) throws Exception
-    {
-        // TO IMPLEMENT
+        return Objects.hash(hour, minute, second);
     }
 
 
@@ -330,8 +349,14 @@ public class Time implements Comparable<Time>
      * 08:30:20 == 08:30:20
      */
     @Override
-    public int compareTo(Time time)
-    {
-        // TO IMPLEMENT
+    public int compareTo(Time other)
+    {   
+        int result = Byte.compare(this.hour, other.hour);
+        if(result != 0) return result;
+
+        result = Byte.compare(this.minute, other.minute);
+        if(result != 0) return result;
+
+        return Integer.compare(this.second, other.second);
     }
 }
